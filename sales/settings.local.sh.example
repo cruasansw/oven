@@ -1,0 +1,29 @@
+# settings.local.sh — credencial local del cliente. CÓPIALO a settings.local.sh.
+# NUNCA se commitea (está en .gitignore). No lo compartas ni lo imprimas.
+#
+# Lo crea/gestiona la skill `onboard` (o `bin/cruasan.sh login` para OAuth).
+# Esta plantilla es solo de referencia.
+
+BASE_URL='https://app.cruasan.com'
+
+# Proveedor de auth: oauth (preferido) | api_key (fallback)
+AUTH_PROVIDER='oauth'
+
+# Identificación del agente que llama (cabecera X-Cruasan-Agent). El wrapper
+# es agente-neutro: si no defines AGENT_NAME lo autodetecta (claude, codex) o
+# manda 'unknown'. Descomenta solo si quieres forzarlo.
+# AGENT_NAME='claude'
+
+# --- Proveedor oauth (Device Authorization Grant, RFC 8628) -------------------
+# Conéctate con `bin/cruasan.sh login`: muestra un código, abre el navegador,
+# apruebas y listo. CLIENT_ID es un cliente OAuth PÚBLICO (sin secreto),
+# uno por plugin con patrón oven-<plugin>; no hay client_secret que guardar.
+CLIENT_ID='oven-sales'
+# Los tokens los escribe el wrapper en el login y los ROTA en cada refresh
+# (siempre guarda el refresh_token nuevo). No los edites a mano ni los copies.
+ACCESS_TOKEN=''
+REFRESH_TOKEN=''
+
+# --- Proveedor api_key (fallback) ---------------------------------------------
+# API key con SOLO permisos de ventas: sales.view sales.manage sales.emit
+# API_KEY=''
