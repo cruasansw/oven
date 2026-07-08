@@ -39,10 +39,33 @@ El payload de cada item (`items[].input`) usa el shape del API público de factu
 | `lines[].type` | Tipo de LÍNEA: `general` (default), `disbursement` (**suplido** — gasto pagado por cuenta del cliente, sin IVA: notaría, tasas…) o `text` (línea informativa sin importe). Para un suplido: `{"type": "disbursement", "description": "...", "units": 1, "unit_price": N}` — sin `taxes` ni `item_type`. |
 | `lines[].sku` | **Solo si el catálogo está activo** (`sales_context` → `catalog.active`). Referencia un producto del catálogo: el servidor autorrellena descripción, precio de tarifa, tipo, unidad y clasificación contable. **Lo que TÚ mandes gana** (manda `unit_price` solo si el cliente dijo un importe distinto de la tarifa; los `taxes` del cliente también ganan). El sku sale de la búsqueda (`POST /api/products/actions/search_for_copilot`) — **nunca lo inventes**. Sku desconocido → issue `PRODUCT_NOT_FOUND`. |
 | `lines[].discount_percent` / `discount_amount` | Descuento por línea. También hay `discount_percent`/`discount_amount` a nivel factura. |
+| `discount_percent` / `discount_amount` (nivel factura) | Descuento GENERAL sobre toda la factura (0-100 el percent). Independiente de los descuentos por línea. |
+| `purchase_order` | Referencia de la orden de pedido del cliente (string libre, sale en la factura). |
+| `invoice_period` | Período que cubre la factura: `{"start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD"}`. También hay `period` POR LÍNEA con el mismo shape. |
+| `tags` | Etiquetas de la factura: array de strings (`["proyecto-x"]`). Útiles para filtrar y agrupar. |
 | `invoice_number` | NO lo mandes en ventas normales: lo asigna la emisión. |
 | `totals` | Solo de SALIDA — lo calcula el servidor; nunca lo mandes. |
 
 A nivel de lote: `external_ref` (clave de idempotencia TUYA en `create`: si repites el create con la misma, no se duplica el lote) y `name` descriptivo.
+
+## Rectificativas (corregir una factura YA emitida)
+
+Una rectificativa es una factura NUEVA (con su propia serie de rectificativas — el servidor
+la elige solo) que corrige una emitida. No confundir con **anular** (eso es `bulk_cancel`)
+ni con editar un borrador `pending` (eso es editar, no rectificar).
+
+Campos sobre el shape normal del item:
+
+| Campo | Regla |
+|---|---|
+| `subtype` | `"corrective"` — obligatorio. |
+| `corrected_invoices` | `[{"invoice_number": "F-2026-00123"}]` — la(s) factura(s) EMITIDA(s) que corrige. El staging la resuelve contra la BD y te devuelve `resolution.corrected` (nº, fecha, total y cliente de la original): **enséñaselo al usuario antes de materializar**. Número inexistente → issue `CORRECTED_INVOICE_NOT_FOUND`; borrador → `CORRECTED_INVOICE_NOT_EMITTED` (un borrador se edita o se descarta, no se rectifica); de otro cliente → `CORRECTED_INVOICE_CUSTOMER_MISMATCH` (debe ser el MISMO destinatario). |
+| `corrective_type` | Obligatorio: `"substitution"` (la nueva REEMPLAZA entera a la original → `lines` = el contenido completo ya corregido) o `"differences"` (`lines` = SOLO el delta, con importes negativos si corrige a la baja). Para "me equivoqué en el importe/concepto", lo natural es substitution. |
+| `corrective_reason` | Obligatorio: motivo en texto, sale en la factura. |
+| `corrective_code` | Código AEAT del motivo: `R1` error fundado en derecho (importe/datos incorrectos — el caso típico), `R2` concurso de acreedores, `R3` crédito incobrable, `R4` resto de motivos, `R5` solo facturas simplificadas. Si dudas entre R1 y R4, pregunta el motivo; sin código el servidor asume `R4`. |
+| `lines[].taxes` (en rectificativas) | **Calca los impuestos de la ORIGINAL línea a línea** (mismos `system_code`; y los mismos `sku` si los llevaba): la rectificativa espeja el régimen fiscal de la operación original, NO se re-determina con el contexto de hoy. Única excepción: si el motivo de la rectificación ES un IVA mal aplicado — entonces pon el correcto y dilo en `corrective_reason`. |
+
+El cliente (`customer`) de la rectificativa: el mismo que la original.
 
 ## Chuleta de impuestos frecuentes (`system_code`)
 

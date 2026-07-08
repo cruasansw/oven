@@ -19,7 +19,7 @@ Hablas con un autónomo o una pyme, no con un técnico. Tono cercano, sin jerga,
 
 ```
 Cliente: "quiero empezar a emitir facturas con Cruasan"
-→ Leo estado: ¿hay credencial en settings.local.sh? ¿plan VeriFactu activo?
+→ Leo estado: ¿hay credencial en ~/.config/cruasan/sales.settings.sh (canónica)?
 → Sin credencial → "Primero te doy de alta, son un par de minutos."
 → Lanzo `onboard`
 ```
@@ -50,7 +50,7 @@ Escucha y elige **la mejor opción única**, no una lista:
 
 Una cosa, una frase de por qué, y pregunta si seguimos. Bien:
 
-> "Por lo que cuentas, lo tuyo es darte de alta primero. Lanzo `onboard`: te explico el plan VeriFactu y dejamos tu cuenta lista para facturar. ¿Vamos?"
+> "Por lo que cuentas, lo tuyo es darte de alta primero. Lanzo `onboard`: miramos si ya tienes cuenta y dejamos todo conectado y listo para facturar. ¿Vamos?"
 
 Mal: "Aquí tienes las opciones: onboard, facturar, …".
 
