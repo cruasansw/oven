@@ -1,14 +1,29 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
-  "name": "sales",
+  "name": "cruasan-sales",
   "displayName": "Ventas",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Gestiona tus ventas de Cruasan desde la conversación: emite facturas VeriFactu (borradores, revisión, emisión, anulación), consulta tus ventas y su estado de cobro, y trabaja con lotes/remesas. Solo habla con endpoints REST estables de app.cruasan.com — nada de consultas libres ni análisis. Mínimo privilegio (solo ventas).",
   "author": {
     "name": "Cruasan Software"
   },
   "license": "UNLICENSED",
-  "keywords": ["cruasan", "ventas", "sales", "verifactu", "facturas", "facturacion", "invoicing", "cobros", "borradores", "lotes", "remesas", "batches", "autonomo", "pyme"],
+  "keywords": [
+    "cruasan",
+    "ventas",
+    "sales",
+    "verifactu",
+    "facturas",
+    "facturacion",
+    "invoicing",
+    "cobros",
+    "borradores",
+    "lotes",
+    "remesas",
+    "batches",
+    "autonomo",
+    "pyme"
+  ],
   "interface": {
     "displayName": "Ventas",
     "shortDescription": "Emite facturas VeriFactu y consulta tus ventas desde la conversación.",

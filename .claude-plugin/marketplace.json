@@ -1,11 +1,11 @@
 {
-  "name": "cruasan-oven",
+  "name": "oven",
   "owner": {
     "name": "Cruasan Software"
   },
   "plugins": [
     {
-      "name": "sales",
+      "name": "cruasan-sales",
       "displayName": "Ventas",
       "source": "./sales",
       "description": "Gestiona tus ventas de Cruasan desde la conversación: emite facturas VeriFactu (borradores, revisión, emisión, anulación), consulta tus ventas y su estado de cobro, y trabaja con lotes/remesas. Solo endpoints REST estables, mínimo privilegio (solo ventas)."

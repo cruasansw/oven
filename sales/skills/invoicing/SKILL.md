@@ -129,7 +129,9 @@ staging → bifurcación → materialize/confirm) con el shape de rectificativa
 
 **No menciones VeriFactu proactivamente** en tus mensajes: ni al emitir ("registro
 enviado" es casi siempre FALSO — al emitir el registro se crea, pero la remisión a la
-AEAT es asíncrona y puede tardar), ni al anular, ni en los resúmenes. Al emitir di:
+AEAT es asíncrona y puede tardar), ni al anular, ni en los resúmenes, **ni al explicar
+qué hace un paso** (para un borrador, "sin efectos fiscales" ya lo dice todo — no añadas
+"sin VeriFactu"). La palabra no aparece salvo que el usuario la traiga. Al emitir di:
 "Emitida la <nº> (<total>) — Ver en Cruasan · PDF" y punto. VeriFactu es fontanería
 del sistema: funciona sola y no es conversación.
 
