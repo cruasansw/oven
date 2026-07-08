@@ -14,7 +14,7 @@ del plugin únicamente puede operar sobre tus ventas.
 
 ```bash
 claude plugin marketplace add cruasansw/oven
-claude plugin install sales@cruasan-oven
+claude plugin install cruasan-sales@oven
 ```
 
 ### Conectar tu cuenta
@@ -26,7 +26,7 @@ plugin te guía (login por navegador, sin copiar claves). Tu credencial queda en
 ### Actualizar
 
 ```bash
-claude plugin update sales
+claude plugin update cruasan-sales
 ```
 
 ### Desconectar
