@@ -15,7 +15,7 @@ Ayudas a un cliente a facturar. Tono cercano. **Tú preparas el borrador; el cli
 ## Antes de nada
 
 1. Comprueba que hay credencial (`~/.config/cruasan/sales.settings.sh` — ruta canónica, sobrevive a updates del plugin; `CRUASAN_SETTINGS` la sobreescribe). Si no → deriva a `onboard`. No intentes llamar sin credencial.
-2. Todas las llamadas pasan por `../../bin/cruasan.sh` (inyecta auth y base URL). **Nunca `curl` directo.** GET: query como `'k=v&k2=v2'` (el wrapper URL-encodea los valores).
+2. Todas las llamadas pasan por `../../bin/cruasan.sh` (inyecta auth y base URL). **Nunca `curl` directo.** GET: query como `'k=v&k2=v2'` (el wrapper URL-encodea los valores). POST: si el cuerpo lleva texto libre (nombres de cliente, descripciones — un apóstrofo rompe el quoting inline), escribe el JSON a un fichero temporal (`mktemp`) y pásalo como `@/ruta/body.json`, o por stdin con `-`.
 3. El shape del payload y la doctrina de respuestas están en **`../../lib/invoice_shape.md`** — léelo antes de construir tu primera factura. El campo de impuestos es `system_code` (no `code`).
 4. Tu credencial SOLO puede ventas (lo garantiza el servidor): un **403 significa "fuera de tu alcance"**, no un bug — no insistas ni busques rodeos.
 
@@ -78,6 +78,10 @@ Ayudas a un cliente a facturar. Tono cercano. **Tú preparas el borrador; el cli
 - `external_ref` te hace el `create` **idempotente**: si dudas de si una llamada llegó, repítela con la misma ref — no duplica.
 - Corregir un item en staging: `POST /api/invoice_batches/actions/update` con `update_items: [{ "_ref": "...", "input": { ...solo lo que cambia... } }]` (merge, no reemplazo). Una vez materializado como `pending`, el borrador se corrige anulándolo (`cancel` con sus `refs`) y recreando el item con otro `_ref`.
 - Emisión parcial: `refs`/`invoice_ids` en `confirm`. Puedes emitir unas y dejar otras.
+- **Operaciones sobre varios items = UNA llamada con todos los `refs`** (materialize,
+  confirm, cancel). PROHIBIDO el bucle de shell llamando por item: dispara ráfagas de
+  llamadas (20 cancels en 60ms observados), infla el audit del lote y multiplica los
+  jobs del servidor. `{"refs": ["a", "b", "c"]}` hace en una llamada lo que el bucle en N.
 
 ## Recetas (resuelve datos SIN pedir trabajo al cliente)
 
@@ -149,6 +153,7 @@ entonces SÍ — con la verdad del backend, nunca de memoria:
 
 - **Confirma con el humano antes de emitir y antes de anular**, enumerando número/cliente/importe. Anular una emitida es irreversible a efectos fiscales.
 - **VeriFactu: solo si preguntan**, y con datos frescos del API (sección de arriba). Nunca afirmes "registro enviado/remitido" por tu cuenta.
+- **Nada de bucles por item**: toda operación multi-item va en UNA llamada con `refs[]`.
 - **Los importes del usuario son base imponible** (sin IVA) salvo que diga "IVA incluido"/"total" — no lo preguntes ni ofrezcas ambas interpretaciones; si se equivocó, lo corrige sobre el borrador.
 - **Nunca emitas sin elección explícita del usuario**: o eligió "emitir directamente" en el paso 4, o revisó el borrador y dio el OK. Mecánicamente toda emisión pasa por el borrador (materialize → confirm), pero al usuario solo le preguntas UNA vez.
 - **Los datos, del servidor**: cliente matcheado y totales salen de `resolution` — nunca los calcules tú ni los des por buenos sin enseñarlos.

@@ -11,8 +11,14 @@
 # Uso:
 #   bin/cruasan.sh GET  /api/invoices/ 'state=pending'
 #   bin/cruasan.sh POST /api/invoice_batches/actions/create '{"items":[...]}'
+#   bin/cruasan.sh POST /api/... @/ruta/body.json    # cuerpo desde fichero
+#   ... | bin/cruasan.sh POST /api/... -             # cuerpo desde stdin
 #   bin/cruasan.sh login        # (oauth) Device Authorization Grant RFC 8628
 #   bin/cruasan.sh logout       # revoca el refresh (RFC 7009) y limpia tokens
+#
+# Para cuerpos con texto libre (nombres con apóstrofos, descripciones largas)
+# usa @fichero o stdin: evita el quoting de JSON inline en el shell y no pasa
+# el cuerpo por argv.
 #
 # Config en settings.local.sh (ver settings.local.sh.example):
 #   BASE_URL, AUTH_PROVIDER=api_key|oauth, y las credenciales del proveedor.
@@ -300,9 +306,20 @@ if [ "${1:-}" = "logout" ]; then
   do_logout
 fi
 
-METHOD="${1:?Uso: cruasan.sh <GET|POST> <ruta> [query|body]}"
+METHOD="${1:?Uso: cruasan.sh <GET|POST> <ruta> [query|body|@fichero|-]}"
 PATH_="${2:?falta la ruta, p.ej. /api/invoices/}"
 DATA="${3:-}"
+
+# Cuerpo desde stdin (-) o fichero (@ruta). Se materializa AQUÍ y no con el
+# @fichero nativo de curl: el retry tras refrescar el token en un 401 tiene
+# que poder reenviar el mismo cuerpo (stdin solo se puede leer una vez).
+if [ "$DATA" = "-" ]; then
+  DATA="$(cat)"
+elif [ "${DATA#@}" != "$DATA" ]; then
+  BODY_FILE="${DATA#@}"
+  [ -f "$BODY_FILE" ] || { echo "ERROR: no existe el fichero de cuerpo: $BODY_FILE" >&2; exit 1; }
+  DATA="$(cat "$BODY_FILE")"
+fi
 
 do_request() {
   local hdr; hdr="$(auth_header)"
