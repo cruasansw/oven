@@ -31,7 +31,9 @@ El payload de cada item (`items[].input`) usa el shape del API público de factu
 | Campo | Regla |
 |---|---|
 | `_ref` | Ponlo TÚ, legible y estable (`"acme-julio-1"`). Nunca recicles un `_ref` ya materializado (el sistema lo veta). |
-| `customer` | Basta UN identificador: `tax_id` (preferido), `system_id` o `id`. El servidor lo matchea contra la BD — `resolution.customer` te dice si existe o se creará. Añade `company_name` (o `first_name`/`last_name` si es persona) cuando sea nuevo: VeriFactu exige nombre. |
+| `customer` | Basta UN identificador: `tax_id` (preferido), `system_id` o `id`. El servidor lo matchea contra la BD — `resolution.customer` te dice si existe o se creará. Añade `company_name` (o `first_name`/`last_name` si es persona) cuando sea nuevo: VeriFactu exige nombre. **OJO con `system_id`**: es el id interno de 24 caracteres hex que devuelve la búsqueda de clientes — NUNCA pongas ahí un NIF (eso es `tax_id`); uno inválido → issue `INVALID_SYSTEM_ID`. |
+| `customer.country` | País del cliente (ISO alpha-3, `"ESP"`; acepta alpha-2 o nombre). **En un cliente NUEVO con motor de impuestos es imprescindible**: sin él el motor no puede determinar el IVA (issue `engine_unavailable: buyer_country_missing`). Pídeselo al usuario al recoger los datos del cliente nuevo — los existentes ya lo tienen en su ficha. |
+| `customer.full_address` | Dirección postal en una línea (calle, número, CP, ciudad). **Opcional**: pídela al dar de alta un cliente nuevo pero SIN bloquear — si el usuario no la tiene, sigue sin ella. |
 | `series_code` | **Opcional** — sin él se usa la serie por defecto (`resolution.series` te dice cuál). Si hay varias y el cliente quiere otra: `GET /api/series/`. |
 | `issue_date` | `YYYY-MM-DD`. Sin ella, hoy. |
 | `lines[].taxes` | SIEMPRE `{ "system_code": "..." }` — el campo se llama **system_code**, no `code`. Códigos válidos: `GET /api/invoices/actions/list_taxes` (chuleta abajo). Si lo omites y la empresa tiene motor de impuestos, lo determina el motor. |
@@ -93,7 +95,10 @@ Cada `create`/`update` devuelve por item un resumen compilado:
   "resolution": {
     "customer": { "matched": "existing", "display_name": "Acme SL" },  // existing | new | unresolved
     "series": { "code": "F-[YYYY]-[0]", "source": "default" },
-    "totals": { "total_net_amount": 650, "total_amount": 786.5 }
+    "totals": { "total_net_amount": 650, "total_amount": 786.5 },
+    "catalog_suggestions": [                        // solo si una línea SIN sku parece del catálogo
+      { "line": 0, "description": "Pañales", "candidates": [{ "sku": "PAN-T3", "name": "Pañales talla 3", "price_amount": 12.5 }] }
+    ]
   }
 }
 ```
@@ -101,3 +106,6 @@ Cada `create`/`update` devuelve por item un resumen compilado:
 Doctrina: **`validation` es tu checklist, `resolution` es tu confirmación.** Enseña al
 cliente el nombre matcheado y los totales de `resolution` ANTES de materializar; resuelve
 los issues preguntando, no adivinando; y no propongas emitir hasta `emit_ready: true`.
+Si viene `catalog_suggestions`, una línea de texto libre parece corresponder a productos
+del catálogo: **propón esos productos al usuario** (con su tarifa) antes de seguir — si
+acepta, corrige la línea poniendo el `sku`; si no, la línea libre se queda como está.

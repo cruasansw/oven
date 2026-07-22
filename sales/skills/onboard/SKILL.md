@@ -73,10 +73,13 @@ Settings → Developer → API Keys.
 Con la credencial funcionando, llama a `GET /api/invoices/actions/sales_context` y mira el
 bloque `setup` (doctrina completa en **`../../lib/setup.md`**):
 
-- `ready_to_emit: true` → todo listo, cierra.
+- `ready_to_emit: true` → todo listo, cierra. Y si `setup.regulation.regulation` es
+  `none`, la empresa NO está acogida a VeriFactu: eso no es un pendiente ni un problema —
+  no ofrezcas activarlo (doctrina en `setup.md`).
 - Hay `blockers` → resuélvelos AHORA, uno a uno, siguiendo `setup.md` (la regulación
-  VeriFactu puede activarse en la conversación con la referencia CSV del apoderamiento
-  AEAT; los datos de empresa y series se arreglan en las `config_url` que trae el propio
+  VeriFactu pendiente puede activarse en la conversación: enlace del apoderamiento AEAT
+  en `setup.regulation.aeat_power_granting_url` + referencia CSV del justificante; los
+  datos de empresa y series se arreglan en las `config_url` que trae el propio
   `setup`). Verifica cada arreglo re-llamando a `sales_context`.
 - Hay `warnings` → menciónalos sin dramatismo (logo, registro mercantil, rectificativas) y sigue.
 

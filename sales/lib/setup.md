@@ -33,13 +33,31 @@ verifica que el blocker desapareció — nunca lo des por resuelto de palabra.
 
 Avísalo con naturalidad al preparar la primera factura de la sesión y no insistas más.
 
+## Regulación `none`: la empresa NO está acogida a VeriFactu
+
+Si `setup.regulation.regulation` es `none` (equivalente: `required: false`), la empresa
+**no tiene ninguna obligación de comunicación a la AEAT**: sus facturas emitidas no
+generan registro ni se remiten, y que no tengan estado de comunicación **es lo normal, no
+un problema**. Doctrina estricta:
+
+- **NO ofrezcas activar VeriFactu** por tu cuenta — no hay nada que activar ni que
+  arreglar. Solo si el usuario pide EXPLÍCITAMENTE acogerse, mándalo a
+  `setup.regulation.config_url` (la configuración inicial de la regulación se hace en la
+  web, no por API: el endpoint de activación rechaza con `regulation_not_configured`).
+- Si pregunta por el envío a Hacienda de una factura: responde que a su empresa no le
+  aplica y que la factura está perfectamente emitida. En lenguaje de cliente — sin citar
+  campos ni valores del API.
+
 ## Receta: activar la regulación (VeriFactu) en conversación
 
+**Solo aplica con la regulación configurada y pendiente** (blocker `regulation_pending`).
 `setup.regulation` trae `state` y, si hay una solicitud en curso, `activation`
 (`method`, `state`, `review_notes`). Explica al cliente las **dos vías**:
 
 1. **Apoderamiento AEAT** (recomendada, se puede completar AQUÍ): el cliente da de alta un
-   apoderamiento a favor de Cruasan en la sede de la AEAT y te trae la **referencia CSV**
+   apoderamiento a favor de Cruasan en la sede de la AEAT — pásale el enlace directo que
+   viene en `setup.regulation.aeat_power_granting_url` (como enlace Markdown con etiqueta;
+   él se identifica dentro con su certificado/Cl@ve) — y te trae la **referencia CSV**
    del justificante. Con ella:
    `POST /api/invoices/actions/activate_regulation` `{"csv_reference": "..."}`
    → el servidor la coteja contra la AEAT: si verifica, **activación inmediata**; si no es
